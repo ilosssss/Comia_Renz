@@ -1,18 +1,23 @@
-FROM php:7.4-apache
+FROM php:8.1-apache
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Copy project files into Apache server folder
-COPY . /var/www/html/
-
 # Set working directory
-WORKDIR /var/www/html/
+WORKDIR /var/www/html
 
-# Install composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer install || true
+# Copy composer files first
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader
+
+# Copy the rest of the project
+COPY . .
+
+# Point Apache to serve from /public
+WORKDIR /var/www/html/public
 
 EXPOSE 80
 CMD ["apache2-foreground"]
