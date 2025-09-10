@@ -3,6 +3,9 @@ FROM php:8.1-apache
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
+# Install required PHP extensions
+RUN docker-php-ext-install pdo pdo_mysql mysqli
+
 # Set working directory
 WORKDIR /var/www/html
 
