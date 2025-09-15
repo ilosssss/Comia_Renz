@@ -54,12 +54,14 @@ class StudentsController extends Controller {
             'last_tag_close' => '</span></li>',
         ]);
         $this->pagination->set_theme('default');
+
+        // ✅ FIXED: base URL now points to /students instead of root
         $this->pagination->initialize(
-    $total_rows,
-    $records_per_page,
-    $page,
-    site_url() . '?q=' . urlencode($q)
-);
+            $total_rows,
+            $records_per_page,
+            $page,
+            site_url('students') . '?q=' . urlencode($q)
+        );
 
         $data['page'] = $this->pagination->paginate();
 
