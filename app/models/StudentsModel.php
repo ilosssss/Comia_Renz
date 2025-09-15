@@ -50,11 +50,8 @@ class StudentsModel extends Model {
             ];
         }
 
-        // ✅ Apply pagination manually with LIMIT + OFFSET
-        $offset = ($page - 1) * $records_per_page;
-        $records = $query
-            ->limit($records_per_page, $offset)
-            ->get_all();
+        // ✅ Apply pagination (per_page, page_number)
+        $records = $query->pagination($records_per_page, $page)->get_all();
 
         return [
             'total_rows' => $total_rows,
