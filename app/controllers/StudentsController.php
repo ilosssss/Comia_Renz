@@ -60,7 +60,7 @@ class StudentsController extends Controller {
             $total_rows,
             $records_per_page,
             $page,
-            site_url() . '?q=' . urlencode($q)
+            site_url(url: 'students') . '?q=' . urlencode($q)
         );
 
         $data['page'] = $this->pagination->paginate();

@@ -25,30 +25,37 @@ class StudentsModel extends Model {
      */
     public function page($q = '', $records_per_page = null, $page = null)
     {
-        if (is_null($page)) {
-            // Return all records without pagination
-            return [
-                'total_rows' => $this->db->table($this->table)->count_all(),
-                'records'    => $this->db->table($this->table)->get_all()
-            ];
-        } else {
-            $query = $this->db->table($this->table);
+        $query = $this->db->table($this->table);
 
-            // ✅ Add search (first_name, last_name, email)
-            if (!empty($q)) {
-                $query->like('first_name', '%'.$q.'%')
-                      ->or_like('last_name', '%'.$q.'%')
-                      ->or_like('email', '%'.$q.'%');
-            }
-
-            // Count total
-            $countQuery = clone $query;
-            $data['total_rows'] = $countQuery->select_count('*', 'count')->get()['count'];
-
-            // Get paginated records
-            $data['records'] = $query->pagination($records_per_page, $page)->get_all();
-
-            return $data;
+        // ✅ Add search (first_name, last_name, email)
+        if (!empty($q)) {
+            $query->like('first_name', $q)
+                  ->or_like('last_name', $q)
+                  ->or_like('email', $q);
         }
+
+        // ✅ Count total rows
+        $countQuery = clone $query;
+        $countResult = $countQuery->select_count('*', 'count')->get();
+
+        $total_rows = (is_array($countResult) && isset($countResult[0]['count']))
+            ? (int) $countResult[0]['count']
+            : 0;
+
+        // ✅ If no pagination, return everything
+        if (is_null($page) || is_null($records_per_page)) {
+            return [
+                'total_rows' => $total_rows,
+                'records'    => $query->get_all()
+            ];
+        }
+
+        // ✅ Apply pagination (per_page, page_number)
+        $records = $query->pagination($records_per_page, $page)->get_all();
+
+        return [
+            'total_rows' => $total_rows,
+            'records'    => $records
+        ];
     }
 }
