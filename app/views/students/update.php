@@ -45,9 +45,7 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
           </div>
         </form>
 
-        <div class="text-center mt-3">
-          <a href="<?= site_url('students') ?>" class="btn btn-outline-secondary btn-sm">← Back to List</a>
-        </div>
+
       </div>
     </div>
   </div>
