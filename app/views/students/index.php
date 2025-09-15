@@ -21,6 +21,26 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
         </a>
       </div>
       <div class="card-body">
+
+        <!-- ✅ Search Form -->
+        <form method="get" action="<?= site_url(); ?>" class="row g-2 mb-3">
+          <div class="col-md-8">
+            <input type="text" 
+                   name="q" 
+                   value="<?= isset($_GET['q']) ? html_escape($_GET['q']) : ''; ?>" 
+                   class="form-control" 
+                   placeholder="🔍 Search by name or email...">
+          </div>
+          <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary">Search</button>
+          </div>
+          <?php if (isset($_GET['q']) && $_GET['q'] != ''): ?>
+            <div class="col-md-2 d-grid">
+              <a href="<?= site_url(); ?>" class="btn btn-secondary">Show All</a>
+            </div>
+          <?php endif; ?>
+        </form>
+
         <table class="table table-striped table-hover align-middle text-center">
           <thead class="table-primary">
             <tr>
@@ -32,27 +52,40 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
             </tr>
           </thead>
           <tbody>
-            <?php foreach(html_escape($students) as $student): ?>
+            <?php if (!empty($students)): ?>
+              <?php foreach(html_escape($students) as $student): ?>
+                <tr>
+                  <td><?= $student['id']; ?></td>
+                  <td><?= $student['first_name']; ?></td>
+                  <td><?= $student['last_name']; ?></td>
+                  <td><?= $student['email']; ?></td>
+                  <td>
+                    <a href="<?= site_url('students/update/'.$student['id']); ?>" 
+                       class="btn btn-sm btn-warning me-1">
+                      ✏️ Update
+                    </a>
+                    <a href="<?= site_url('students/delete/'.$student['id']); ?>" 
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Are you sure you want to delete this record?');">
+                      🗑️ Delete
+                    </a>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            <?php else: ?>
               <tr>
-                <td><?= $student['id']; ?></td>
-                <td><?= $student['first_name']; ?></td>
-                <td><?= $student['last_name']; ?></td>
-                <td><?= $student['email']; ?></td>
-                <td>
-                  <a href="<?= site_url('students/update/'.$student['id']); ?>" 
-                     class="btn btn-sm btn-warning me-1">
-                    ✏️ Update
-                  </a>
-                  <a href="<?= site_url('students/delete/'.$student['id']); ?>" 
-                     class="btn btn-sm btn-danger"
-                     onclick="return confirm('Are you sure you want to delete this record?');">
-                    🗑️ Delete
-                  </a>
-                </td>
+                <td colspan="5" class="text-muted">No students found.</td>
               </tr>
-            <?php endforeach; ?>
+            <?php endif; ?>
           </tbody>
         </table>
+
+        <!-- ✅ Pagination -->
+        <?php if (!empty($page)): ?>
+          <div class="d-flex justify-content-center mt-3">
+            <?= $page; ?>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
   </div>
