@@ -6,51 +6,52 @@ class StudentsController extends Controller
     public function __construct()
     {
         parent::__construct();
-        // Load the model
-        $this->call->model('Student_model');
+        // ✅ Load your StudentsModel (must match file/class name)
+        $this->call->model('StudentsModel');
     }
 
     /**
-     * Show all students with search + pagination
+     * Show students list with pagination + search
      */
     public function index()
     {
-        // ✅ Fix: Safe fetching of page
-        $page = isset($_GET['page']) ? (int) $this->io->get('page') : 1;
-        if ($page < 1) $page = 1;
+        // ✅ Use io->get safely with default values
+        $q     = $this->io->get('q') ?? '';
+        $page  = (int) ($this->io->get('page') ?? 1);
+        $limit = 5; // rows per page
 
-        $limit  = 5;                          // records per page
-        $offset = ($page - 1) * $limit;
+        // ✅ Get paginated records
+        $result = $this->StudentsModel->page($q, $limit, $page);
 
-        // ✅ Fix: Safe fetching of search query
-        $q = isset($_GET['q']) ? trim($this->io->get('q')) : '';
+        $students   = $result['records'];
+        $total_rows = $result['total_rows'];
 
-        // Get students with search & pagination
-        $students = $this->Student_model->get_students($limit, $offset, $q);
-        $total    = $this->Student_model->count_students($q);
+        // ✅ Simple pagination links
+        $total_pages = ceil($total_rows / $limit);
+        $pagination = '';
+        if ($total_pages > 1) {
+            $pagination .= '<nav><ul class="pagination">';
+            for ($i = 1; $i <= $total_pages; $i++) {
+                $active = ($i == $page) ? 'active' : '';
+                $pagination .= '<li class="page-item '.$active.'">
+                                  <a class="page-link" href="'.site_url('students?page='.$i.'&q='.urlencode($q)).'">'.$i.'</a>
+                                </li>';
+            }
+            $pagination .= '</ul></nav>';
+        }
 
-        // Prepare pagination links
-        $this->call->library('pagination');
-        $config = [
-            'base_url'     => site_url('students'),
-            'total_rows'   => $total,
-            'per_page'     => $limit,
-            'cur_page'     => $page,
-            'page_query_string' => true,
-            'query_string_segment' => 'page',
+        // ✅ Pass data to view
+        $data = [
+            'students' => $students,
+            'page'     => $pagination,
+            'q'        => $q
         ];
-        $this->pagination->initialize($config);
-        $data['page'] = $this->pagination->create_links();
-
-        // Pass data to view
-        $data['students'] = $students;
-        $data['q']        = $q;
 
         $this->call->view('students/index', $data);
     }
 
     /**
-     * Show the create student form
+     * Show create form
      */
     public function create()
     {
@@ -62,14 +63,16 @@ class StudentsController extends Controller
      */
     public function store()
     {
-        $first = trim($this->io->post('first_name'));
-        $last  = trim($this->io->post('last_name'));
-        $email = trim($this->io->post('email'));
+        $data = [
+            'first_name' => $this->io->post('first_name'),
+            'last_name'  => $this->io->post('last_name'),
+            'email'      => $this->io->post('email')
+        ];
 
-        if ($this->Student_model->insert($first, $last, $email)) {
+        if ($this->StudentsModel->insert($data)) {
             redirect('students');
         } else {
-            echo "❌ Failed to save student.";
+            show_error('Failed to insert student.');
         }
     }
 
@@ -78,15 +81,8 @@ class StudentsController extends Controller
      */
     public function update($id)
     {
-        $student = $this->Student_model->get_student($id);
-
-        if (!$student) {
-            show_404();
-            return;
-        }
-
-        $data['student'] = $student;
-        $this->call->view('students/update', $data);
+        $student = $this->StudentsModel->get_where(['id' => $id]);
+        $this->call->view('students/update', ['student' => $student]);
     }
 
     /**
@@ -94,14 +90,16 @@ class StudentsController extends Controller
      */
     public function save($id)
     {
-        $first = trim($this->io->post('first_name'));
-        $last  = trim($this->io->post('last_name'));
-        $email = trim($this->io->post('email'));
+        $data = [
+            'first_name' => $this->io->post('first_name'),
+            'last_name'  => $this->io->post('last_name'),
+            'email'      => $this->io->post('email')
+        ];
 
-        if ($this->Student_model->update($id, $first, $last, $email)) {
+        if ($this->StudentsModel->update($id, $data)) {
             redirect('students');
         } else {
-            echo "❌ Failed to update student.";
+            show_error('Failed to update student.');
         }
     }
 
@@ -110,10 +108,10 @@ class StudentsController extends Controller
      */
     public function delete($id)
     {
-        if ($this->Student_model->delete($id)) {
+        if ($this->StudentsModel->delete($id)) {
             redirect('students');
         } else {
-            echo "❌ Failed to delete student.";
+            show_error('Failed to delete student.');
         }
     }
 }
