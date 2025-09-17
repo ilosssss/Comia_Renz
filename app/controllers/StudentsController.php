@@ -55,12 +55,12 @@ class StudentsController extends Controller {
         ]);
         $this->pagination->set_theme('default');
 
-        // ✅ FIXED: base URL now points to /students instead of root
+        // ✅ FIXED: base URL now points to /students
         $this->pagination->initialize(
             $total_rows,
             $records_per_page,
             $page,
-            site_url(url: 'students') . '?q=' . urlencode($q)
+            site_url('students') . '?q=' . urlencode($q)
         );
 
         $data['page'] = $this->pagination->paginate();
@@ -83,7 +83,7 @@ class StudentsController extends Controller {
             ];
 
             if ($this->StudentsModel->insert($data)) {
-                redirect();
+                redirect('students');
             } else {
                 echo 'Error creating student.';
             }
@@ -112,7 +112,7 @@ class StudentsController extends Controller {
             ];
 
             if ($this->StudentsModel->update($id, $data)) {
-                redirect();
+                redirect('students');
             } else {
                 echo 'Error updating student.';
             }
@@ -125,7 +125,7 @@ class StudentsController extends Controller {
     public function delete($id)
     {
         if ($this->StudentsModel->delete($id)) {
-            redirect();
+            redirect('students');
         } else {
             echo 'Error deleting student.';
         }
