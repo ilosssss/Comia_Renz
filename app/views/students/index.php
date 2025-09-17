@@ -22,7 +22,7 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
       </div>
       <div class="card-body">
 
-        <!-- ✅ Search Form (fixed to point to /students) -->
+        <!-- ✅ Search Form -->
         <form method="get" action="<?= site_url('students'); ?>" class="row g-2 mb-3">
           <div class="col-md-8">
             <input type="text" 
@@ -34,7 +34,7 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
           <div class="col-md-2 d-grid">
             <button type="submit" class="btn btn-primary">Search</button>
           </div>
-          <?php if (isset($_GET['q']) && $_GET['q'] != ''): ?>
+          <?php if (!empty($_GET['q'])): ?>
             <div class="col-md-2 d-grid">
               <a href="<?= site_url('students'); ?>" class="btn btn-secondary">Show All</a>
             </div>
@@ -56,10 +56,10 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
             <?php if (!empty($students)): ?>
               <?php foreach ($students as $student): ?>
                 <tr>
-                  <td><?= html_escape($student['id']); ?></td>
-                  <td><?= html_escape($student['first_name']); ?></td>
-                  <td><?= html_escape($student['last_name']); ?></td>
-                  <td><?= html_escape($student['email']); ?></td>
+                  <td><?= isset($student['id']) ? html_escape($student['id']) : '-'; ?></td>
+                  <td><?= isset($student['first_name']) ? html_escape($student['first_name']) : '<em class="text-danger">Missing</em>'; ?></td>
+                  <td><?= isset($student['last_name']) ? html_escape($student['last_name']) : '<em class="text-danger">Missing</em>'; ?></td>
+                  <td><?= isset($student['email']) ? html_escape($student['email']) : '<em class="text-muted">No Email</em>'; ?></td>
                   <td>
                     <a href="<?= site_url('students/update/'.$student['id']); ?>" 
                        class="btn btn-sm btn-warning me-1">

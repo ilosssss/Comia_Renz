@@ -13,16 +13,13 @@ class StudentsController extends Controller {
     {
         // Current page (ensure integer)
         $page = 1;
-        if (isset($_GET['page']) && !empty($_GET['page'])) {
+        if ($this->io->get('page')) {
             $page = (int) $this->io->get('page');
             if ($page < 1) $page = 1;
         }
 
         // Search query
-        $q = '';
-        if (isset($_GET['q']) && !empty($_GET['q'])) {
-            $q = trim($this->io->get('q'));
-        }
+        $q = $this->io->get('q') ? trim($this->io->get('q')) : '';
 
         // ✅ Lower this number to force pagination
         $records_per_page = 2; // show only 2 students per page
@@ -56,7 +53,7 @@ class StudentsController extends Controller {
         ]);
         $this->pagination->set_theme('default');
 
-        // ✅ FIXED: use base_url instead of site_url to avoid duplicate index.php
+        // ✅ Use site_url() correctly for students listing
         $this->pagination->initialize(
             $total_rows,
             $records_per_page,
@@ -73,14 +70,10 @@ class StudentsController extends Controller {
     public function create()
     {
         if ($this->io->method() == 'post') {
-            $firstname = $this->io->post('first_name');
-            $lastname  = $this->io->post('last_name');
-            $email     = $this->io->post('email');
-
             $data = [
-                'first_name' => $firstname,
-                'last_name'  => $lastname,
-                'email'      => $email
+                'first_name' => $this->io->post('first_name'),
+                'last_name'  => $this->io->post('last_name'),
+                'email'      => $this->io->post('email')
             ];
 
             if ($this->StudentsModel->insert($data)) {
@@ -102,14 +95,10 @@ class StudentsController extends Controller {
         }
 
         if ($this->io->method() == 'post') {
-            $firstname = $this->io->post('first_name');
-            $lastname  = $this->io->post('last_name');
-            $email     = $this->io->post('email');
-
             $data = [
-                'first_name' => $firstname,
-                'last_name'  => $lastname,
-                'email'      => $email
+                'first_name' => $this->io->post('first_name'),
+                'last_name'  => $this->io->post('last_name'),
+                'email'      => $this->io->post('email')
             ];
 
             if ($this->StudentsModel->update($id, $data)) {
