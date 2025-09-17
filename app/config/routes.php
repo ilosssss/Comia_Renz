@@ -40,11 +40,13 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 | -------------------------------------------------------------------
 | Here is where you can register web routes for your application.
 |
-|
 */
 
+# Homepage and student listing
 $router->get('/', 'StudentsController::index'); 
+$router->get('/students', 'StudentsController::index'); 
+
+# Student CRUD
 $router->match('/students/create', 'StudentsController::create', ['GET', 'POST']);
 $router->match('/students/update/{id}', 'StudentsController::update', ['GET', 'POST']);
 $router->get('/students/delete/{id}', 'StudentsController::delete');
-
