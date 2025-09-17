@@ -24,7 +24,8 @@ class StudentsController extends Controller {
             $q = trim($this->io->get('q'));
         }
 
-        $records_per_page = 5;
+        // ✅ Lower this number to force pagination
+        $records_per_page = 2; // show only 2 students per page
 
         // Get paginated data from model
         $all = $this->StudentsModel->page($q, $records_per_page, $page);
@@ -55,12 +56,12 @@ class StudentsController extends Controller {
         ]);
         $this->pagination->set_theme('default');
 
-        // ✅ FIXED: base URL now points to /students
+        // ✅ FIXED: use base_url instead of site_url to avoid duplicate index.php
         $this->pagination->initialize(
             $total_rows,
             $records_per_page,
             $page,
-            site_url('students') . '?q=' . urlencode($q)
+            base_url('students') . '?q=' . urlencode($q)
         );
 
         $data['page'] = $this->pagination->paginate();
