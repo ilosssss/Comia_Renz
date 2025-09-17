@@ -6,33 +6,36 @@ class StudentsController extends Controller {
     {
         parent::__construct();
         $this->call->model('StudentsModel');
-        $this->call->library('pagination'); 
+        $this->call->library('pagination'); // ✅ pagination library
     }
 
     public function index()
     {
-        // Current page
-        $page = (int)($this->io->get('page') ?? 1);
-        if ($page < 1) $page = 1;
+        // ✅ Current page (safe handling)
+        $page = (int) $this->io->get('page', 1);
+        if ($page < 1) {
+            $page = 1;
+        }
 
-        // Search query
-        $q = trim($this->io->get('q') ?? '');
+        // ✅ Search query (safe handling)
+        $q = $this->io->get('q', '');
 
-        // Records per page
-        $records_per_page = 5;
+        // ✅ Adjust per page (for testing, keep 2 so you can see pagination clearly)
+        $records_per_page = 2;
 
-        // Fetch data from model
+        // Get paginated data from model
         $all = $this->StudentsModel->page($q, $records_per_page, $page);
         $data['students'] = $all['records'];
         $total_rows = $all['total_rows'];
 
-        // ✅ Pagination setup
+        // Pagination setup (Bootstrap 5 styling)
         $this->pagination->set_options([
             'first_link'     => '⏮ First',
             'last_link'      => 'Last ⏭',
             'next_link'      => 'Next →',
             'prev_link'      => '← Prev',
-            'full_tag_open'  => '<ul class="pagination justify-content-center mt-3">',
+            'page_delimiter' => '&page=',
+            'full_tag_open'  => '<ul class="pagination justify-content-center mt-3">', 
             'full_tag_close' => '</ul>',
             'num_tag_open'   => '<li class="page-item"><span class="page-link">',
             'num_tag_close'  => '</span></li>',
@@ -49,23 +52,31 @@ class StudentsController extends Controller {
         ]);
         $this->pagination->set_theme('default');
 
-        // ✅ Correct base URL (keeps search if present)
-        $base_url = site_url('students') . (!empty($q) ? '?q=' . urlencode($q) : '');
-        $this->pagination->initialize($total_rows, $records_per_page, $page, $base_url);
+        // ✅ Base URL points to /students with search query
+        $this->pagination->initialize(
+            $total_rows,
+            $records_per_page,
+            $page,
+            site_url('students') . '?q=' . urlencode($q)
+        );
 
         $data['page'] = $this->pagination->paginate();
 
-        // Render students/index.php
+        // Render view
         $this->call->view('students/index', $data);
     }
 
     public function create()
     {
         if ($this->io->method() == 'post') {
+            $firstname = $this->io->post('first_name');
+            $lastname  = $this->io->post('last_name');
+            $email     = $this->io->post('email');
+
             $data = [
-                'first_name' => $this->io->post('first_name'),
-                'last_name'  => $this->io->post('last_name'),
-                'email'      => $this->io->post('email')
+                'first_name' => $firstname,
+                'last_name'  => $lastname,
+                'email'      => $email
             ];
 
             if ($this->StudentsModel->insert($data)) {
@@ -87,10 +98,14 @@ class StudentsController extends Controller {
         }
 
         if ($this->io->method() == 'post') {
+            $firstname = $this->io->post('first_name');
+            $lastname  = $this->io->post('last_name');
+            $email     = $this->io->post('email');
+
             $data = [
-                'first_name' => $this->io->post('first_name'),
-                'last_name'  => $this->io->post('last_name'),
-                'email'      => $this->io->post('email')
+                'first_name' => $firstname,
+                'last_name'  => $lastname,
+                'email'      => $email
             ];
 
             if ($this->StudentsModel->update($id, $data)) {
@@ -99,7 +114,8 @@ class StudentsController extends Controller {
                 echo 'Error updating student.';
             }
         } else {
-            $this->call->view('students/update', ['student' => $student]);
+            $data['student'] = $student;
+            $this->call->view('students/update', $data);
         }
     }
 
