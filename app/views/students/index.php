@@ -22,8 +22,8 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
       </div>
       <div class="card-body">
 
-        <!-- ✅ Search Form -->
-        <form method="get" action="<?= site_url(); ?>" class="row g-2 mb-3">
+        <!-- ✅ Search Form (fixed to point to /students) -->
+        <form method="get" action="<?= site_url('students'); ?>" class="row g-2 mb-3">
           <div class="col-md-8">
             <input type="text" 
                    name="q" 
@@ -36,11 +36,12 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
           </div>
           <?php if (isset($_GET['q']) && $_GET['q'] != ''): ?>
             <div class="col-md-2 d-grid">
-              <a href="<?= site_url(); ?>" class="btn btn-secondary">Show All</a>
+              <a href="<?= site_url('students'); ?>" class="btn btn-secondary">Show All</a>
             </div>
           <?php endif; ?>
         </form>
 
+        <!-- ✅ Student Table -->
         <table class="table table-striped table-hover align-middle text-center">
           <thead class="table-primary">
             <tr>
@@ -53,12 +54,12 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
           </thead>
           <tbody>
             <?php if (!empty($students)): ?>
-              <?php foreach(html_escape($students) as $student): ?>
+              <?php foreach ($students as $student): ?>
                 <tr>
-                  <td><?= $student['id']; ?></td>
-                  <td><?= $student['first_name']; ?></td>
-                  <td><?= $student['last_name']; ?></td>
-                  <td><?= $student['email']; ?></td>
+                  <td><?= html_escape($student['id']); ?></td>
+                  <td><?= html_escape($student['first_name']); ?></td>
+                  <td><?= html_escape($student['last_name']); ?></td>
+                  <td><?= html_escape($student['email']); ?></td>
                   <td>
                     <a href="<?= site_url('students/update/'.$student['id']); ?>" 
                        class="btn btn-sm btn-warning me-1">
