@@ -27,14 +27,14 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
           <div class="col-md-8">
             <input type="text" 
                    name="q" 
-                   value="<?= html_escape($this->io->get('q', '')); ?>" 
+                   value="<?= html_escape($search ?? ''); ?>" 
                    class="form-control" 
                    placeholder="🔍 Search by name or email...">
           </div>
           <div class="col-md-2 d-grid">
             <button type="submit" class="btn btn-primary">Search</button>
           </div>
-          <?php if (!empty($this->io->get('q'))): ?>
+          <?php if (!empty($search)): ?>
             <div class="col-md-2 d-grid">
               <a href="<?= site_url('students'); ?>" class="btn btn-secondary">Show All</a>
             </div>

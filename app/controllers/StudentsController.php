@@ -1,125 +1,95 @@
 <?php
 defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 
-class StudentsController extends Controller {
+class StudentsController extends Controller
+{
     public function __construct()
     {
         parent::__construct();
         $this->call->model('StudentsModel');
-        $this->call->library('pagination'); // ✅ pagination library
     }
 
     public function index()
     {
-        // Current page (ensure integer)
-        $page = 1;
-        if (isset($_GET['page']) && !empty($_GET['page'])) {
-            $page = (int) $this->io->get('page');
-            if ($page < 1) $page = 1;
-        }
+        // ✅ Safely get query params
+        $page = (int) ($this->input->get('page') ?? 1);
+        if ($page < 1) $page = 1;
 
-        // Search query
-        $q = '';
-        if (isset($_GET['q']) && !empty($_GET['q'])) {
-            $q = trim($this->io->get('q'));
-        }
+        $q = $this->input->get('q') ?? '';
 
         $records_per_page = 5;
 
-        // Get paginated data from model
+        // ✅ Fetch records with pagination
         $all = $this->StudentsModel->page($q, $records_per_page, $page);
+
         $data['students'] = $all['records'];
         $total_rows = $all['total_rows'];
+        $data['search'] = $q; // pass to view
 
-        // Pagination setup (Bootstrap 5)
-        $this->pagination->set_options([
-            'first_link'     => '⏮ First',
-            'last_link'      => 'Last ⏭',
-            'next_link'      => 'Next →',
-            'prev_link'      => '← Prev',
-            'page_delimiter' => '&page=',
-            'full_tag_open'  => '<ul class="pagination justify-content-center mt-3">', 
+        // ✅ Build pagination links
+        $this->call->library('pagination');
+        $config = [
+            'base_url' => site_url('students'),
+            'total_rows' => $total_rows,
+            'per_page' => $records_per_page,
+            'query_string_segment' => 'page',
+            'page_query_string' => TRUE,
+            'full_tag_open' => '<ul class="pagination">',
             'full_tag_close' => '</ul>',
-            'num_tag_open'   => '<li class="page-item"><span class="page-link">',
-            'num_tag_close'  => '</span></li>',
-            'cur_tag_open'   => '<li class="page-item active"><span class="page-link">',
-            'cur_tag_close'  => '</span></li>',
-            'prev_tag_open'  => '<li class="page-item"><span class="page-link">',
-            'prev_tag_close' => '</span></li>',
-            'next_tag_open'  => '<li class="page-item"><span class="page-link">',
+            'num_tag_open' => '<li class="page-item"><span class="page-link">',
+            'num_tag_close' => '</span></li>',
+            'cur_tag_open' => '<li class="page-item active"><span class="page-link">',
+            'cur_tag_close' => '</span></li>',
+            'next_tag_open' => '<li class="page-item"><span class="page-link">',
             'next_tag_close' => '</span></li>',
-            'first_tag_open' => '<li class="page-item"><span class="page-link">',
-            'first_tag_close'=> '</span></li>',
-            'last_tag_open'  => '<li class="page-item"><span class="page-link">',
-            'last_tag_close' => '</span></li>',
-        ]);
-        $this->pagination->set_theme('default');
+            'prev_tag_open' => '<li class="page-item"><span class="page-link">',
+            'prev_tag_close' => '</span></li>'
+        ];
+        $this->pagination->initialize($config);
+        $data['page'] = $this->pagination->create_links();
 
-        // ✅ FIXED: base URL now points to /students
-        $this->pagination->initialize(
-            $total_rows,
-            $records_per_page,
-            $page,
-            site_url('students') . '?q=' . urlencode($q)
-        );
-
-        $data['page'] = $this->pagination->paginate();
-
-        // Render view
         $this->call->view('students/index', $data);
     }
 
     public function create()
     {
-        if ($this->io->method() == 'post') {
-            $firstname = $this->io->post('first_name');
-            $lastname  = $this->io->post('last_name');
-            $email     = $this->io->post('email');
-
+        if ($this->form_validation->submitted())
+        {
             $data = [
-                'first_name' => $firstname,
-                'last_name'  => $lastname,
-                'email'      => $email
+                'first_name' => $this->input->post('first_name', TRUE),
+                'last_name'  => $this->input->post('last_name', TRUE),
+                'email'      => $this->input->post('email', TRUE),
             ];
 
             if ($this->StudentsModel->insert($data)) {
                 redirect('students');
             } else {
-                echo 'Error creating student.';
+                show_error('Failed to create student');
             }
-        } else {
-            $this->call->view('students/create');
         }
+
+        $this->call->view('students/create');
     }
 
     public function update($id)
     {
-        $student = $this->StudentsModel->find($id);
-        if (!$student) {
-            echo "Student not found.";
-            return;
-        }
-
-        if ($this->io->method() == 'post') {
-            $firstname = $this->io->post('first_name');
-            $lastname  = $this->io->post('last_name');
-            $email     = $this->io->post('email');
-
+        if ($this->form_validation->submitted())
+        {
             $data = [
-                'first_name' => $firstname,
-                'last_name'  => $lastname,
-                'email'      => $email
+                'first_name' => $this->input->post('first_name', TRUE),
+                'last_name'  => $this->input->post('last_name', TRUE),
+                'email'      => $this->input->post('email', TRUE),
             ];
 
             if ($this->StudentsModel->update($id, $data)) {
                 redirect('students');
             } else {
-                echo 'Error updating student.';
+                show_error('Failed to update student');
             }
-        } else {
-            $data['student'] = $student;
-            $this->call->view('students/update', $data);
         }
+
+        $student = $this->StudentsModel->get_where(['id' => $id]);
+        $this->call->view('students/update', ['student' => $student]);
     }
 
     public function delete($id)
@@ -127,7 +97,7 @@ class StudentsController extends Controller {
         if ($this->StudentsModel->delete($id)) {
             redirect('students');
         } else {
-            echo 'Error deleting student.';
+            show_error('Failed to delete student');
         }
     }
 }
