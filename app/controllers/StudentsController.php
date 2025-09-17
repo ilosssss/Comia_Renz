@@ -12,10 +12,10 @@ class StudentsController extends Controller
     public function index()
     {
         // ✅ Safely get query params
-        $page = (int) ($this->input->get('page') ?? 1);
+        $page = (int) ($this->io->get('page') ?? 1);
         if ($page < 1) $page = 1;
 
-        $q = $this->input->get('q') ?? '';
+        $q = $this->io->get('q') ?? '';
 
         $records_per_page = 5;
 
@@ -56,9 +56,9 @@ class StudentsController extends Controller
         if ($this->form_validation->submitted())
         {
             $data = [
-                'first_name' => $this->input->post('first_name', TRUE),
-                'last_name'  => $this->input->post('last_name', TRUE),
-                'email'      => $this->input->post('email', TRUE),
+                'first_name' => $this->io->post('first_name', TRUE),
+                'last_name'  => $this->io->post('last_name', TRUE),
+                'email'      => $this->io->post('email', TRUE),
             ];
 
             if ($this->StudentsModel->insert($data)) {
@@ -76,9 +76,9 @@ class StudentsController extends Controller
         if ($this->form_validation->submitted())
         {
             $data = [
-                'first_name' => $this->input->post('first_name', TRUE),
-                'last_name'  => $this->input->post('last_name', TRUE),
-                'email'      => $this->input->post('email', TRUE),
+                'first_name' => $this->io->post('first_name', TRUE),
+                'last_name'  => $this->io->post('last_name', TRUE),
+                'email'      => $this->io->post('email', TRUE),
             ];
 
             if ($this->StudentsModel->update($id, $data)) {
