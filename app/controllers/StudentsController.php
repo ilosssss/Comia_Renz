@@ -11,24 +11,27 @@ class StudentsController extends Controller {
 
     public function index()
     {
-        // ✅ Current page (safe handling)
-        $page = (int) $this->io->get('page', 1);
-        if ($page < 1) {
-            $page = 1;
+        // Current page (ensure integer)
+        $page = 1;
+        if (isset($_GET['page']) && !empty($_GET['page'])) {
+            $page = (int) $this->io->get('page');
+            if ($page < 1) $page = 1;
         }
 
-        // ✅ Search query (safe handling)
-        $q = $this->io->get('q', '');
+        // Search query
+        $q = '';
+        if (isset($_GET['q']) && !empty($_GET['q'])) {
+            $q = trim($this->io->get('q'));
+        }
 
-        // ✅ Adjust per page (for testing, keep 2 so you can see pagination clearly)
-        $records_per_page = 2;
+        $records_per_page = 5;
 
         // Get paginated data from model
         $all = $this->StudentsModel->page($q, $records_per_page, $page);
         $data['students'] = $all['records'];
         $total_rows = $all['total_rows'];
 
-        // Pagination setup (Bootstrap 5 styling)
+        // Pagination setup (Bootstrap 5)
         $this->pagination->set_options([
             'first_link'     => '⏮ First',
             'last_link'      => 'Last ⏭',
@@ -52,7 +55,7 @@ class StudentsController extends Controller {
         ]);
         $this->pagination->set_theme('default');
 
-        // ✅ Base URL points to /students with search query
+        // ✅ FIXED: base URL now points to /students
         $this->pagination->initialize(
             $total_rows,
             $records_per_page,
