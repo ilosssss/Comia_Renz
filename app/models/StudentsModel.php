@@ -27,7 +27,7 @@ class StudentsModel extends Model {
     {
         $offset = ($page - 1) * $records_per_page;
 
-        // ✅ Count total rows separately
+        // ✅ Count total rows
         $countQuery = $this->db->table($this->table);
         if (!empty($q)) {
             $countQuery->like('first_name', $q)
@@ -35,9 +35,7 @@ class StudentsModel extends Model {
                        ->or_like('email', $q);
         }
         $countResult = $countQuery->select_count('*', 'count')->get();
-        $total_rows = (is_array($countResult) && isset($countResult[0]['count']))
-            ? (int) $countResult[0]['count']
-            : 0;
+        $total_rows = isset($countResult['count']) ? (int) $countResult['count'] : 0;
 
         // ✅ Now get paginated records
         $query = $this->db->table($this->table);
