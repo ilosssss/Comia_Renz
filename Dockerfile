@@ -1,26 +1,19 @@
-FROM php:8.1-apache
+FROM php:8.2-apache
+
+# Install PDO MySQL
+RUN docker-php-ext-install pdo pdo_mysql
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Install required PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql mysqli
+# Allow .htaccess overrides
+RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
-# Set working directory
-WORKDIR /var/www/html
+# Copy app files
+COPY . /var/www/html/
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Copy composer files first
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader
-
-# Copy the rest of the project
-COPY . .
-
-# Point Apache to serve from /public
-WORKDIR /var/www/html/public
+# Fix permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
 EXPOSE 80
-CMD ["apache2-foreground"]
