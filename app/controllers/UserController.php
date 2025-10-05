@@ -7,6 +7,11 @@ class UserController extends Controller {
     public function __construct()
     {
         parent::__construct();
+		$this->call->library(['auth', 'session']);
+		if (!$this->auth->is_logged_in()) {
+			redirect('auth/login');
+			return;
+		}
         $this->call->model('UserModel');
         $this->call->library('pagination');
     }
@@ -38,20 +43,18 @@ class UserController extends Controller {
         $base_url = site_url('users/view') . '?q=' . urlencode($q);
         $pagination_html = $this->renderPagination($total_rows, $this->records_per_page, $page, $base_url);
 
+        $isAdmin = $this->auth->has_role('admin');
+        $showEmail = $isAdmin; // only admins get the email column; users see 2 cols
+        $colspan = $isAdmin ? 4 : 2;
+        $headerRow = $isAdmin
+            ? '<tr><th>ID</th><th>Player</th><th>Email</th><th>Actions</th></tr>'
+            : '<tr><th>ID</th><th>Player</th></tr>';
         $rows = '';
         if (!empty($users)) {
             foreach ($users as $u) {
-                $rows .= '<tr class="table-row">
-                    <td class="table-cell id-cell">' . $this->escape($u['id']) . '</td>
-                    <td class="table-cell">
-                        <div class="user-info">
-                            <div class="avatar">' . strtoupper(substr($u['username'], 0, 2)) . '</div>
-                            <span class="username">' . $this->escape($u['username']) . '</span>
-                        </div>
-                    </td>
-                    <td class="table-cell email-cell">' . $this->escape($u['email']) . '</td>
-                    <td class="table-cell action-cell">
-                        <div class="action-buttons">
+                $actionButtons = '';
+                if ($isAdmin) {
+                    $actionButtons = '<div class="action-buttons">
                             <a href="' . $this->escape(site_url('users/update/'.$u['id'])) . '" class="btn btn-edit">
                                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -64,12 +67,22 @@ class UserController extends Controller {
                                 </svg>
                                 Delete
                             </a>
-                        </div>
-                    </td>
-                </tr>';
+                        </div>';
+                }
+                $rows .= '<tr class="table-row">'
+                    . '<td class="table-cell id-cell">' . $this->escape($u['id']) . '</td>'
+                    . '<td class="table-cell">'
+                        . '<div class="user-info">'
+                            . '<div class="avatar">' . strtoupper(substr($u['username'], 0, 2)) . '</div>'
+                            . '<span class="username">' . $this->escape($u['username']) . '</span>'
+                        . '</div>'
+                    . '</td>'
+                    . ($showEmail ? '<td class="table-cell email-cell">' . $this->escape($u['email']) . '</td>' : '')
+                    . ($isAdmin ? '<td class="table-cell action-cell">' . $actionButtons . '</td>' : '')
+                . '</tr>';
             }
         } else {
-            $rows = '<tr><td colspan="4" class="empty-state">
+            $rows = '<tr><td colspan="'.$colspan.'" class="empty-state">
                 <div class="empty-content">
                     <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24" style="opacity: 0.3;">
                         <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9M19 9H14V4H5V21H19V9Z"/>
@@ -82,6 +95,17 @@ class UserController extends Controller {
 
         $escaped_q = $this->escape($q);
         $add_url = $this->escape(site_url('users/create'));
+        $logout_url = $this->escape(site_url('auth/logout'));
+        $add_button = '';
+        if ($isAdmin) {
+            $add_button = '<a href="'.$add_url.'" class="btn btn-success">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                            Add Player
+                        </a>';
+        }
+        $logout_button = '<a href="'.$logout_url.'" class="btn btn-secondary">Logout</a>';
 
         echo '<!DOCTYPE html>
         <html lang="en">
@@ -246,18 +270,14 @@ class UserController extends Controller {
                             </svg>
                             Search
                         </button>
-                        <a href="'.$add_url.'" class="btn btn-success">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                            </svg>
-                            Add Player
-                        </a>
+                        '.$add_button.'
+                        '.$logout_button.'
                     </form>
                 </div>
                 <div class="table-container">
                     <table class="table">
                         <thead class="table-header">
-                            <tr><th>ID</th><th>Player</th><th>Email</th><th>Actions</th></tr>
+                            '.$headerRow.'
                         </thead>
                         <tbody>'.$rows.'</tbody>
                     </table>
@@ -270,6 +290,10 @@ class UserController extends Controller {
 
     public function create()
     {
+        if (!$this->auth->has_role('admin')) {
+            redirect('users/view');
+            return;
+        }
         if ($this->io->method() === 'post') {
             $data = [
                 'username' => $this->io->post('username'),
@@ -373,6 +397,10 @@ class UserController extends Controller {
 
     public function update($id)
     {
+        if (!$this->auth->has_role('admin')) {
+            redirect('users/view');
+            return;
+        }
         if ($this->io->method() === 'post') {
             $data = [
                 'username' => $this->io->post('username'),
@@ -488,6 +516,10 @@ class UserController extends Controller {
 
     public function delete($id)
     {
+        if (!$this->auth->has_role('admin')) {
+            redirect('users/view');
+            return;
+        }
         $user = $this->UserModel->find($id);
         if (!$user) {
             redirect('users/view');
