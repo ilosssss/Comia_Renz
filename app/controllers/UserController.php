@@ -44,11 +44,11 @@ class UserController extends Controller {
         $pagination_html = $this->renderPagination($total_rows, $this->records_per_page, $page, $base_url);
 
         $isAdmin = $this->auth->has_role('admin');
-        $showEmail = $isAdmin; // only admins get the email column; users see 2 cols
-        $colspan = $isAdmin ? 4 : 2;
+        $showEmail = true; // show email to all users
+        $colspan = $isAdmin ? 4 : 3;
         $headerRow = $isAdmin
             ? '<tr><th>ID</th><th>Player</th><th>Email</th><th>Actions</th></tr>'
-            : '<tr><th>ID</th><th>Player</th></tr>';
+            : '<tr><th>ID</th><th>Player</th><th>Email</th></tr>';
         $rows = '';
         if (!empty($users)) {
             foreach ($users as $u) {
