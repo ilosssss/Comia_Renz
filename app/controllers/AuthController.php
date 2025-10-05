@@ -6,6 +6,8 @@ class AuthController extends Controller
     public function register()
     {
         $this->call->library('auth');
+        // Ensure session is initialized before any echo/HTML in auth flows
+        $this->call->library('session');
 
         if ($this->io->method() == 'post') {
             $username = $this->io->post('username');
@@ -27,6 +29,7 @@ class AuthController extends Controller
     public function login()
     {
         $this->call->library('auth');
+        $this->call->library('session');
 
         if ($this->io->method() == 'post') {
             $username = $this->io->post('username');

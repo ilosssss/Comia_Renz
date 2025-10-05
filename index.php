@@ -1,5 +1,7 @@
 <?php
 define('PREVENT_DIRECT_ACCESS', TRUE);
+// Enable output buffering early to avoid "headers already sent" before session init
+if (function_exists('ob_start')) { ob_start(); }
 /**
  * ------------------------------------------------------------------
  * LavaLust - an opensource lightweight PHP MVC Framework
