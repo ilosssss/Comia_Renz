@@ -105,7 +105,7 @@ class UserController extends Controller {
                             Add Player
                         </a>';
         }
-        $logout_button = '<a href="'.$logout_url.'" class="btn btn-secondary">Logout</a>';
+        $logout_button = '<a href="'.$logout_url.'" class="btn btn-primary">Logout</a>';
 
         echo '<!DOCTYPE html>
         <html lang="en">

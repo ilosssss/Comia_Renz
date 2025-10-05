@@ -18,8 +18,8 @@
         .field{margin-top:1rem}
         .actions{display:flex;gap:.75rem;margin-top:1.25rem}
         .btn{flex:1;padding:.9rem 1rem;border:0;border-radius:10px;font-weight:700;cursor:pointer;transition:.2s}
-        .btn-primary{background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff}
-        .btn-secondary{background:#e5e7eb;color:#374151;text-decoration:none;text-align:center}
+        .btn-primary{background:linear-gradient(135deg,#a855f7 0%,#8b5cf6 100%);color:#fff}
+        .btn-secondary{background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff;text-decoration:none;text-align:center}
         .muted{margin-top:1rem;color:#6b7280}
         .muted a{color:#0ea5e9}
     </style>
